@@ -2,7 +2,7 @@ from aiogram.dispatcher import FSMContext
 import io
 
 from aiogram.types import ReplyKeyboardRemove
-
+from aiogram.utils import markdown
 from files import mysql_use
 from files import telegraph_use as tgh
 from files.bot_states import *
@@ -47,11 +47,17 @@ async def main_menu(message: types.Message, state: FSMContext):
     await state.set_state('States:add_photo')
 
 
+@dp.message_handler(text='test', state='*')
+async def main_menu(message: types.Message, state: FSMContext):
+    await bot.send_message(chat_id=message.from_user.id, text='Всё хорошо, как же еще может быть ' + markdown.hide_link('vk.com'), parse_mode='HTML' )
+
+
+
 @dp.message_handler(state=States.add_name)
 async def main_menu(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
     print('name', message.text)
-    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts)
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts,)
     await state.set_state('States:menu')
 
 
@@ -82,7 +88,7 @@ async def main_menu(message: types.Message, state: FSMContext):
     src = 'media/' + message.caption + '.jpg'
     with open(src, 'wb') as new_file:
         new_file.write(downloaded_file)
-    # await state.set_state('States:show')
+    await state.set_state('States:menu')
 
 
 @dp.message_handler(text='Меню', state='*', content_types=types.ContentTypes.TEXT)
@@ -99,19 +105,17 @@ async def show_message(message: types.Message, state: FSMContext):
     await state.update_data(link=link)
     data = await state.get_data()
     if data.get('name') != 'None':
-        text = data['name']
+        text = '<b>' + data['name'] + '</b>'
     else:
         text = ''
-
-    if
     if data.get('text') != 'None':
         text += data['text']
-
+    text += '<a href="' + link + '"> </a>' '\n'
     # part_name = '<b>' + data['name'] + '\n</b>'
     # part_link = '<a href="' + link + '"> </a>' '\n'
 
-    # await message.answer('Предпросмотр поста:')
-    # await message.answer(text=part_name + part_link + part_text, parse_mode='HTML', reply_markup=kb_done)
+    await message.answer('Предпросмотр поста:')
+    await message.answer(text=text, parse_mode='HTML', reply_markup=kb_done, )
 
 
 @dp.message_handler(text='Редактировать пост', state='*', content_types=types.ContentTypes.TEXT)
