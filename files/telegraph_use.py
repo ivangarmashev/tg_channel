@@ -12,7 +12,7 @@ telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71e
 directory = 'C:/Users/ivang/PycharmProjects/Tg_channel/media/'  # directory of photo
 
 
-def create_site():
+def create_site(name):
     list_files = os.listdir(directory)
     photo_html = ''
     for i in list_files:
@@ -25,7 +25,7 @@ def create_site():
                 ).json()[0]['src']
             ) + '"/><figcaption>' + i.rpartition('.jpg')[0] + '</figcaption></figure>'
     response = telegraph.create_page(  # create page
-        'Photo',
+        title=name,
         html_content='<p>TEXT1' + photo_html + 'TEXT2<br/></p>',
         author_name='Ivan Garmashev',
         author_url='https://t.me/PUTEEEN',

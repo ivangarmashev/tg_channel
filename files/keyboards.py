@@ -5,9 +5,9 @@ kb_start = types.ReplyKeyboardMarkup(resize_keyboard=True)
 kb_start.add('Написать новый пост')
 
 kb_parts = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-kb_parts.add('Название')
-kb_parts.add('Текст')
-kb_parts.add('Фото')
+kb_parts.insert('Название')
+kb_parts.insert('Текст')
+kb_parts.insert('Фото')
 kb_parts.add('Предпросмотр поста')
 kb_parts.add('Удалить пост')
 

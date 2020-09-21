@@ -101,19 +101,24 @@ async def show_message(message: types.Message, state: FSMContext):
 @dp.message_handler(text='Предпросмотр поста', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     await message.answer('Загружаю фото..', reply_markup=ReplyKeyboardRemove())
-    link = tgh.create_site()
-    await state.update_data(link=link)
     data = await state.get_data()
-    if data.get('name') != 'None':
-        text = '<b>' + data['name'] + '</b>'
-    else:
-        text = ''
-    if data.get('text') != 'None':
-        text += data['text']
-    text += '<a href="' + link + '"> </a>' '\n'
+    print(data.get('name'))
+    if data.get('name') is None:
+        await message.answer('Вы не добавили название, введите его:')
+        await state.set_state('States:add_name')
+        return
+        # text = '<b>' + data['name'] + '</b>'
+    elif data.get('text') is None:
+        await message.answer('Вы не добавили текст, введите его:')
+        await state.set_state('States:add_text')
+        return
+
+
     # part_name = '<b>' + data['name'] + '\n</b>'
     # part_link = '<a href="' + link + '"> </a>' '\n'
-
+    link = tgh.create_site(data['name'])
+    text += '<a href="' + link + '"> </a>' '\n'
+    await state.update_data(link=link)
     await message.answer('Предпросмотр поста:')
     await message.answer(text=text, parse_mode='HTML', reply_markup=kb_done, )
 
