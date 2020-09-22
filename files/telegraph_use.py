@@ -18,18 +18,19 @@ def create_site(name):
     for i in list_files:
         print(i)
         with open(directory + i, 'rb') as f:  # upload photo to server
-            photo_html = photo_html + '<figure><img src="' + (
+            photo_html = photo_html + '<p><figure><img src="' + (
                 requests.post(
                     'https://telegra.ph/upload',
                     files={'1': ('1', f, 'image/jpg')}  # image/gif, image/jpeg, image/jpg, image/png, video/mp4
                 ).json()[0]['src']
-            ) + '"/><figcaption>' + i.rpartition('.jpg')[0] + '</figcaption></figure>'
+            ) + '"/><figcaption>' + i.rpartition('.jpg')[0] + '</figcaption></figure></p>'
     response = telegraph.create_page(  # create page
         title=name,
-        html_content='<p>TEXT1' + photo_html + 'TEXT2<br/></p>',
+        html_content=photo_html,
         author_name='Ivan Garmashev',
         author_url='https://t.me/PUTEEEN',
     )
+    print(photo_html)
     link = 'https://telegra.ph/{}'.format(response['path'])
     print(link)
     return link
@@ -49,7 +50,7 @@ def delete_media():
 #                     author_name='Редактированный автор',
 #                     # author_url='Редактированная ссылка',
 #                     html_content='<p>Редактированный текст<br/></p>',)
-# create_site()
+create_site('Название поста')
 # create_site()
 # create_site()
 # print(telegraph.get_page('Photo-09-18-13'))

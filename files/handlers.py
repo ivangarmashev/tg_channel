@@ -2,7 +2,7 @@ from aiogram.dispatcher import FSMContext
 import io
 
 from aiogram.types import ReplyKeyboardRemove
-from aiogram.utils import markdown
+from aiogram.utils.markdown import hide_link
 from files import mysql_use
 from files import telegraph_use as tgh
 from files.bot_states import *
@@ -49,7 +49,7 @@ async def main_menu(message: types.Message, state: FSMContext):
 
 @dp.message_handler(text='test', state='*')
 async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id, text='Всё хорошо, как же еще может быть ' + markdown.hide_link('vk.com'), parse_mode='HTML' )
+    await bot.send_message(chat_id=message.from_user.id, text='Всё хорошо, как же еще может быть ' + hide_link('vk.com'), parse_mode='HTML' )
 
 
 
@@ -88,7 +88,6 @@ async def main_menu(message: types.Message, state: FSMContext):
     src = 'media/' + message.caption + '.jpg'
     with open(src, 'wb') as new_file:
         new_file.write(downloaded_file)
-    await state.set_state('States:menu')
 
 
 @dp.message_handler(text='Меню', state='*', content_types=types.ContentTypes.TEXT)
@@ -112,15 +111,15 @@ async def show_message(message: types.Message, state: FSMContext):
         await message.answer('Вы не добавили текст, введите его:')
         await state.set_state('States:add_text')
         return
-
+    text = data['name'] + '\n' + data['text']
 
     # part_name = '<b>' + data['name'] + '\n</b>'
     # part_link = '<a href="' + link + '"> </a>' '\n'
     link = tgh.create_site(data['name'])
-    text += '<a href="' + link + '"> </a>' '\n'
+    # text += '<a href="' + link + '"> </a>' '\n'
     await state.update_data(link=link)
     await message.answer('Предпросмотр поста:')
-    await message.answer(text=text, parse_mode='HTML', reply_markup=kb_done, )
+    await message.answer(text=text + hide_link(link), parse_mode='HTML', reply_markup=kb_done, )
 
 
 @dp.message_handler(text='Редактировать пост', state='*', content_types=types.ContentTypes.TEXT)
