@@ -86,4 +86,5 @@ def check_copy(id_origin_mes):
 t_connect = time.time()
 connection = pymysql.connect(**connect_param)
 print('Database connected\nTime of connect=', (time.time() - t_connect))
-check_copy('228')
+check_copy('153')
+check_origin('3603')
