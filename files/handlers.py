@@ -49,15 +49,15 @@ async def main_menu(message: types.Message, state: FSMContext):
 
 @dp.message_handler(text='test', state='*')
 async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id, text='Всё хорошо, как же еще может быть ' + hide_link('vk.com'), parse_mode='HTML' )
-
+    await bot.send_message(chat_id=message.from_user.id,
+                           text='Всё хорошо, как же еще может быть ' + hide_link('vk.com'), parse_mode='HTML')
 
 
 @dp.message_handler(state=States.add_name)
 async def main_menu(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
     print('name', message.text)
-    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts,)
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts, )
     await state.set_state('States:menu')
 
 
@@ -67,16 +67,6 @@ async def main_menu(message: types.Message, state: FSMContext):
     await state.update_data(text=message.text)
     await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts)
     await state.set_state('States:menu')
-
-
-# @dp.message_handler(state=States.add_text)
-# async def main_menu(message: types.Message, state: FSMContext):
-#     await state.update_data(text=message.text)
-#     # await state.set_state('States:add_photo')
-#     await bot.send_message(chat_id=message.from_user.id,
-#                            text='Принято!',
-#                            reply_markup=kb_parts)
-#     # await state.set_state('media')
 
 
 @dp.message_handler(state=States.add_photo, content_types=types.ContentTypes.PHOTO)
@@ -139,19 +129,35 @@ async def show_message(message: types.Message, state: FSMContext):
 @dp.message_handler(text='Отправить пост', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     data = await state.get_data()
+    if data.get('name') is None:
+        await message.answer('Вы не добавили название, введите его:')
+        await state.set_state('States:add_name')
+        return
+        # text = '<b>' + data['name'] + '</b>'
+    elif data.get('text') is None:
+        await message.answer('Вы не добавили текст, введите его:')
+        await state.set_state('States:add_text')
+        return
+    elif data.get('link') is None:
+        link = tgh.create_site(data['name'])
+    else:
+        link = data['link']
+    text = data['name'] + '\n' + data['text']
+    # await message.answer(text=text + hide_link(link), parse_mode='HTML', reply_markup=favourite, )
+    data = await state.get_data()
     part_text = data['text']
     part_name = '<b>' + data['name'] + '\n</b>'
     part_link = '<a href="' + data['link'] + '"> </a>' '\n'
     await message.answer('Отправляю..', reply_markup=kb_start)
-    await bot.send_message(chat_id=ch_id,
-                           text=part_name + part_link + part_text,
-                           parse_mode='HTML',
-                           reply_markup=inline_favrt,
-                           )
+    print('отправляем сообщение в канал:\n',
+          await bot.send_message(chat_id=ch_id,
+                                 text=part_name + part_link + part_text,
+                                 parse_mode='HTML',
+                                 reply_markup=kb_favourite,
+                                 )
+          )
     await state.reset_data()
-    tgh.delete_media()
-    # await message.answer(text=part_name + part_link + part_text, parse_mode='HTML', reply_markup=kb_done)
-
+    # tgh.delete_media()
 
 # await bot.send_message(chat_id=message.from_user.id, reply_markup=kb_start)
 
@@ -207,13 +213,15 @@ async def show_message(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(text='favourite', state='*')
 async def process_callback_button1(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer(text='Добавлено в избранное', show_alert=True)
-    await callback.message.send_copy(chat_id=callback.from_user.id,
-                                     reply_markup=inline_favrt, )
+    mes = await callback.message.send_copy(chat_id=callback.from_user.id,
+                                           reply_markup=kb_favourite,
+                                           )
+    print(mes.message_id)
     print(callback.message.message_id)
-    mysql_use.check_user(callback.from_user.id, callback.message.message_id)
+    mysql_use.check_user(callback.from_user.id, mes.message_id)
 
 
-@dp.callback_query_handler(text='favourite', state='*')
+@dp.callback_query_handler(text='favour12ite', state='*')
 async def callback_del(callback: types.CallbackQuery):
     mysql_use.check_user(callback.from_user.id, callback.message.message_id)
     print(callback)

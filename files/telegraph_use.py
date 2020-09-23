@@ -23,9 +23,9 @@ def create_site(name):
                     'https://telegra.ph/upload',
                     files={'1': ('1', f, 'image/jpg')}  # image/gif, image/jpeg, image/jpg, image/png, video/mp4
                 ).json()[0]['src']
-            ) + '"/><figcaption>' + i.rpartition('.jpg')[0] + '</figcaption></figure></p>'
-    response = telegraph.create_page(  # create page
-        title=name,
+            ) + '"/><pre><figcaption>' + i.rpartition('.jpg')[0] + '</figcaption></pre></figure></p>'
+    response = telegraph.create_page(
+        name,
         html_content=photo_html,
         author_name='Ivan Garmashev',
         author_url='https://t.me/PUTEEEN',
@@ -50,7 +50,7 @@ def delete_media():
 #                     author_name='Редактированный автор',
 #                     # author_url='Редактированная ссылка',
 #                     html_content='<p>Редактированный текст<br/></p>',)
-create_site('Название поста')
+# create_site(name='Название поста')
 # create_site()
 # create_site()
 # print(telegraph.get_page('Photo-09-18-13'))

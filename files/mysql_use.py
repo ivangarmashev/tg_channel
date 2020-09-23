@@ -8,7 +8,7 @@ connect_param = {'host': '18.191.94.4',
                  'password': '0880',
                  'db': 'users',
                  'charset': 'utf8',
-                 # 'cursorclass': DictCursor
+                 'cursorclass': DictCursor
                  }      # connect to server
 
 connect_param2 = {'host': 'localhost',
@@ -63,11 +63,14 @@ def check_user(id_user, id_mes):
 
 def print_table():
     with connection.cursor() as cursor:
-        cursor.execute('show tables')
+        # a = []
+        cursor.execute('select * from favourite where id_user=123')
         for row in cursor:
-            print(row)
+            a = dict(row)
+            print(list(a['id_message']))
 
 
 t_connect = time.time()
 connection = pymysql.connect(**connect_param)
 print('Database connected\nTime of connect=', (time.time() - t_connect))
+print_table()

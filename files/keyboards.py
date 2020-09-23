@@ -23,8 +23,10 @@ kb_done.add('Удалить пост')
 inline_btn_1 = InlineKeyboardButton('/start', callback_data='button1')
 inline_btn_2 = InlineKeyboardButton('/add', callback_data='button2')
 inline_btn_3 = InlineKeyboardButton('Третья кнопка!', callback_data='button3')
+
 favourite = InlineKeyboardButton('Избранное', callback_data='favourite')
-inline_favrt = InlineKeyboardMarkup().add(favourite)
+kb_favourite = InlineKeyboardMarkup().add(favourite)
+
 del_fvrt = InlineKeyboardButton('Удалить из избранного', callback_data='favourite')
 inline_del_fvrt = InlineKeyboardMarkup().add(del_fvrt)
 inline_start = InlineKeyboardMarkup().add(inline_btn_1, inline_btn_2)
