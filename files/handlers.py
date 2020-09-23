@@ -212,13 +212,13 @@ async def show_message(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text='favourite', state='*')
 async def process_callback_button1(callback: types.CallbackQuery, state: FSMContext):
-    await callback.answer(text='Добавлено в избранное', show_alert=True)
+    await callback.answer(text='Добавлено в избранное')
     mes = await callback.message.send_copy(chat_id=callback.from_user.id,
                                            reply_markup=kb_favourite,
                                            )
     print(mes.message_id)
     print(callback.message.message_id)
-    mysql_use.check_user(callback.from_user.id, mes.message_id)
+    mysql_use.check_user_new(callback.from_user.id, id_origin=callback.message.message_id, id_copy=mes.message_id)
 
 
 @dp.callback_query_handler(text='favour12ite', state='*')
