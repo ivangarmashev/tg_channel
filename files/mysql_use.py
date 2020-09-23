@@ -8,7 +8,7 @@ connect_param = {'host': '18.191.94.4',
                  'password': '0880',
                  'db': 'users',
                  'charset': 'utf8',
-                 'cursorclass': DictCursor
+                 # 'cursorclass': DictCursor
                  }  # connect to server
 
 connect_param2 = {'host': 'localhost',
@@ -39,13 +39,21 @@ def delete_user(id_user):
     print()
 
 
-def check_user(id_user, id_mes):
+def check_user(id_user, id_mes, copy=False, origin=False):
+    id_origin = id_mes
+    id_copy = id_mes
     t_request = time.time()
     with connection.cursor() as cursor:
         user_exist = cursor.execute('select id_message from favourite where id_user=%s' % id_user)
         for row in cursor:
             line = row[0]
             mes_exist = row[0].find(';' + str(id_mes) + ';')
+
+        if copy:
+            id_origin = get_origin(id_mes)
+        elif origin:
+            id_copy = get_copy(id_mes)
+        print('id_orig:%i\nid_copy:%i' % (id_origin, id_copy))
 
         if user_exist == 0:  # user not exist
             add_user(id_user, id_mes)
@@ -61,7 +69,7 @@ def check_user(id_user, id_mes):
     print('Time of request to base:', time.time() - t_request)
 
 
-def check_origin(id_copy_mes):
+def get_origin(id_copy_mes):
     with connection.cursor() as cursor:
         # a = []
         cursor.execute('select * from favourite where id_user=123')
@@ -69,22 +77,22 @@ def check_origin(id_copy_mes):
             print(row['id_message'])
             id_orig_mes = row['id_message'].partition('-' + id_copy_mes + ';')[0].rpartition(';')[2]
             print(id_orig_mes)
-            if id_orig_mes == '':
-                id_orig_mes = row['id_message'].partition(';' + id_copy_mes + '-')[2].partition(';')[0]
-                print(id_orig_mes)
+            return id_orig_mes
 
 
-def check_copy(id_origin_mes):
+def get_copy(id_origin_mes):
     with connection.cursor() as cursor:
         cursor.execute('select * from favourite where id_user=123')
         for row in cursor:
             print(row['id_message'])
             id_copy_mes = row['id_message'].partition(';' + id_origin_mes + '-')[2].partition(';')[0]
             print(id_copy_mes)
+            return id_copy_mes
 
 
 t_connect = time.time()
 connection = pymysql.connect(**connect_param)
 print('Database connected\nTime of connect=', (time.time() - t_connect))
-check_copy('153')
-check_origin('3603')
+# get_copy('153')
+# get_origin('3603')
+check_user('123', '3603', copy=True)
