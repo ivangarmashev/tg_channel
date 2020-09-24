@@ -1,9 +1,16 @@
 from aiogram.utils import executor
-# import asyncio
+from files import timers
 from files.handlers import *
+from datetime import datetime
+import time
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 if __name__ == '__main__':
-    # loop = asyncio.get_event_loop()
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(timers.tick, 'date', seconds=10)
+    scheduler.start()
     executor.start_polling(dp)
 
 
