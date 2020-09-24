@@ -19,7 +19,10 @@ def create_site(name):
         print(i)
         with open(directory + i, 'rb') as f:  # upload photo to server
             file_name = i.rpartition('.jpg')[0]
-            caption = file_name.replace(name[0], '@')
+            if len(file_name) > 1:
+                caption = file_name.replace(file_name[0], '@')
+            else:
+                caption = ''
             photo_html = photo_html + '<p><figure><img src="' + (
                 requests.post(
                     'https://telegra.ph/upload',
@@ -42,7 +45,6 @@ def delete_media():
     c = os.listdir(directory)
     for x in c:
         os.remove(directory + x)
-
 
 # print(telegraph.get_account_info())
 # print(telegraph.get_access_token())

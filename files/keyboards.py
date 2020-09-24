@@ -9,18 +9,19 @@ menu = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                  )
 menu.insert('Название')
 menu.insert('Текст')
-menu.add('Фото')
-menu.insert('Гиперссылки')
+menu.add('Гиперссылки')
+menu.insert('Фото')
 menu.add('Предпросмотр')
 menu.insert('Удалить пост')
 menu.add('Опубликовать пост в канал')
 
 next_state = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 next_state.add('Принять')
+next_state.add('Удалить фото')
 next_state.add('Удалить пост')
 
 done = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-done.add('Отправить пост')
+done.add('Опубликовать пост в канал')
 done.add('Редактировать пост')
 done.add('Удалить пост')
 

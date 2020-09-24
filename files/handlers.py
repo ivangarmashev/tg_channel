@@ -1,6 +1,6 @@
 from aiogram.dispatcher import FSMContext
 import io
-
+import asyncio
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hide_link
 from files import mysql_use as db
@@ -51,8 +51,30 @@ async def main_menu(message: types.Message, state: FSMContext):
 
 @dp.message_handler(text='Фото', state='*')
 async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id, text='Отравьте фото и нажмите "Принять"', reply_markup=kb.next_state)
+    await bot.send_message(chat_id=message.from_user.id,
+                           text='Отравьте фото и нажмите "Принять"',
+                           reply_markup=kb.next_state)
     await state.set_state('States:add_photo')
+
+
+# # @dp.message_handler(text='п2313', state='*')
+async def send(ch):
+    await asyncio.sleep(10)
+    await bot.send_message(chat_id=ch,
+                           text='отправлено через 10 секунд',
+                           )
+
+
+@dp.message_handler(text='пауза', state='*')
+async def main_menu(message: types.Message, state: FSMContext):
+    await bot.send_message(chat_id=message.from_user.id,
+                           text='отправлено прямо сейчас',
+                           )
+    await asyncio.wait(send(message.from_user.id))
+    await bot.send_message(chat_id=message.from_user.id,
+                           text='отправлено не через 30 секунд',
+                           )
+    # await state.set_state('States:add_photo')
 
 
 @dp.message_handler(text='test', state='*')
@@ -87,11 +109,13 @@ async def main_menu(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=States.add_photo, content_types=types.ContentTypes.PHOTO)
 async def main_menu(message: types.Message, state: FSMContext):
-
     print(len(message.photo) - 1)
     file_info = await bot.get_file(message.photo[len(message.photo) - 1].file_id)
     downloaded_file = await bot.download_file_by_id(file_info.file_id)
     downloaded_file = io.BytesIO.read(downloaded_file)
+    if message.caption is None:
+        message.caption = ''
+
     src = 'media/' + str(len(os.listdir('media'))) + str(message.caption) + '.jpg'
     with open(src, 'wb') as new_file:
         new_file.write(downloaded_file)
@@ -124,13 +148,10 @@ async def show_message(message: types.Message, state: FSMContext):
         return
 
     link = tgh.create_site(data['name'])
-    text = '<b>' + data['name'] + '</b>' + '\n'\
-           + data['hyperlinks'] + '\n'\
-           + hide_link(link) + data['text']
+    text = '<b>' + data['name'] + '</b>' + '\n' \
+           + hide_link(link) + data['hyperlinks'] + '\n' \
+           + '\n' + data['text']
 
-    # part_name = '<b>' + data['name'] + '\n</b>'
-    # part_link = '<a href="' + link + '"> </a>' '\n'
-    # text += '<a href="' + link + '"> </a>' '\n'
     await state.update_data(link=link)
     await message.answer('Предпросмотр поста:')
     await message.answer(text=text, parse_mode='HTML', reply_markup=kb.done, )
@@ -150,6 +171,14 @@ async def show_message(message: types.Message, state: FSMContext):
                            reply_markup=kb.start)
 
 
+@dp.message_handler(text='Удалить фото', state='*', content_types=types.ContentTypes.TEXT)
+async def show_message(message: types.Message, state: FSMContext):
+    tgh.delete_media()
+    await bot.send_message(chat_id=message.from_user.id,
+                           text='Фото удалены, можете добавить новые',
+                           reply_markup=kb.menu)
+
+
 @dp.message_handler(text='Опубликовать пост в канал', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     data = await state.get_data()
@@ -157,7 +186,6 @@ async def show_message(message: types.Message, state: FSMContext):
         await message.answer('Вы не добавили название, введите его:')
         await state.set_state('States:add_name')
         return
-        # text = '<b>' + data['name'] + '</b>'
     elif data.get('text') is None:
         await message.answer('Вы не добавили текст, введите его:')
         await state.set_state('States:add_text')
@@ -171,8 +199,8 @@ async def show_message(message: types.Message, state: FSMContext):
     else:
         link = data['link']
     text = data['name'] + '\n' + data['text']
-    # await message.answer(text=text + hide_link(link), parse_mode='HTML', reply_markup=favourite, )
-    data = await state.get_data()
+
+    # data = await state.get_data()
     part_text = data['text']
     part_name = '<b>' + data['name'] + '\n</b>'
     part_link = '<a href="' + data['link'] + '"> </a>' '\n'
@@ -184,7 +212,7 @@ async def show_message(message: types.Message, state: FSMContext):
                            reply_markup=kb.favourite,
                            )
     await state.reset_data()
-    # tgh.delete_media()
+
 
 # await bot.send_message(chat_id=message.from_user.id, reply_markup=kb_start)
 

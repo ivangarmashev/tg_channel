@@ -1,8 +1,9 @@
 from aiogram.utils import executor
-
+# import asyncio
 from files.handlers import *
 
 if __name__ == '__main__':
+    # loop = asyncio.get_event_loop()
     executor.start_polling(dp)
 
 
