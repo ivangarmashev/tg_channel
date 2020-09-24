@@ -18,12 +18,14 @@ def create_site(name):
     for i in list_files:
         print(i)
         with open(directory + i, 'rb') as f:  # upload photo to server
+            file_name = i.rpartition('.jpg')[0]
+            caption = file_name.replace(name[0], '@')
             photo_html = photo_html + '<p><figure><img src="' + (
                 requests.post(
                     'https://telegra.ph/upload',
                     files={'1': ('1', f, 'image/jpg')}  # image/gif, image/jpeg, image/jpg, image/png, video/mp4
                 ).json()[0]['src']
-            ) + '"/><pre><figcaption>' + i.rpartition('.jpg')[0] + '</figcaption></pre></figure></p>'
+            ) + '"/><pre><figcaption>' + caption + '</figcaption></pre></figure></p>'
     response = telegraph.create_page(
         name,
         html_content=photo_html,

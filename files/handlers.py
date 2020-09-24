@@ -3,11 +3,13 @@ import io
 
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hide_link
-from files import mysql_use
+from files import mysql_use as db
 from files import telegraph_use as tgh
 from files.bot_states import *
 from files.connections import *
-from files.keyboards import *
+import files.keyboards as kb
+from aiogram import types
+import os
 
 
 @dp.message_handler(commands=['start'], state="*")
@@ -15,12 +17,12 @@ from files.keyboards import *
 async def send_welcome(message: types.Message, state: FSMContext):
     # types.ReplyKeyboardRemove()
     # await bot.send_message(chat_id=ch_id, text='123')
-    await message.reply("Привет", reply_markup=kb_start)
+    await message.reply("Привет", reply_markup=kb.start)
 
 
 @dp.message_handler(text='Написать новый пост', state='*')
 async def main_menu(message: types.Message, state: FSMContext):
-    await message.answer(text='Добавить/отредактировать:', reply_markup=kb_parts)
+    await message.answer(text='Добавить/отредактировать:', reply_markup=kb.menu)
     await state.reset_data()
     tgh.delete_media()
     # await state.set_data(name='')
@@ -41,9 +43,15 @@ async def main_menu(message: types.Message, state: FSMContext):
     await state.set_state('States:add_text')
 
 
+@dp.message_handler(text='Гиперссылки', state='*')
+async def main_menu(message: types.Message, state: FSMContext):
+    await bot.send_message(chat_id=message.from_user.id, text='Введите ссылки в формате HTML:')
+    await state.set_state('States:add_hyperlinks')
+
+
 @dp.message_handler(text='Фото', state='*')
 async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id, text='Отравьте фото и нажмите "Принять"', reply_markup=kb_next)
+    await bot.send_message(chat_id=message.from_user.id, text='Отравьте фото и нажмите "Принять"', reply_markup=kb.next_state)
     await state.set_state('States:add_photo')
 
 
@@ -57,7 +65,7 @@ async def main_menu(message: types.Message, state: FSMContext):
 async def main_menu(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
     print('name', message.text)
-    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts, )
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb.menu, )
     await state.set_state('States:menu')
 
 
@@ -65,17 +73,26 @@ async def main_menu(message: types.Message, state: FSMContext):
 async def main_menu(message: types.Message, state: FSMContext):
     print('text', message.text)
     await state.update_data(text=message.text)
-    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts)
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb.menu)
+    await state.set_state('States:menu')
+
+
+@dp.message_handler(state=States.add_hyperlinks)
+async def main_menu(message: types.Message, state: FSMContext):
+    print('text', message.text)
+    await state.update_data(hyperlinks=message.text)
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb.menu)
     await state.set_state('States:menu')
 
 
 @dp.message_handler(state=States.add_photo, content_types=types.ContentTypes.PHOTO)
 async def main_menu(message: types.Message, state: FSMContext):
+
     print(len(message.photo) - 1)
     file_info = await bot.get_file(message.photo[len(message.photo) - 1].file_id)
     downloaded_file = await bot.download_file_by_id(file_info.file_id)
     downloaded_file = io.BytesIO.read(downloaded_file)
-    src = 'media/' + message.caption + '.jpg'
+    src = 'media/' + str(len(os.listdir('media'))) + str(message.caption) + '.jpg'
     with open(src, 'wb') as new_file:
         new_file.write(downloaded_file)
 
@@ -83,11 +100,11 @@ async def main_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(text='Меню', state='*', content_types=types.ContentTypes.TEXT)
 @dp.message_handler(text='Принять', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb_parts)
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb.menu)
     await state.set_state('States:menu')
 
 
-@dp.message_handler(text='Предпросмотр поста', state='*', content_types=types.ContentTypes.TEXT)
+@dp.message_handler(text='Предпросмотр', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     await message.answer('Загружаю фото..', reply_markup=ReplyKeyboardRemove())
     data = await state.get_data()
@@ -101,20 +118,27 @@ async def show_message(message: types.Message, state: FSMContext):
         await message.answer('Вы не добавили текст, введите его:')
         await state.set_state('States:add_text')
         return
-    text = data['name'] + '\n' + data['text']
+    elif data.get('hyperlinks') is None:
+        await message.answer('Вы не добавили гиперссылки, введите их:')
+        await state.set_state('States:add_hyperlinks')
+        return
+
+    link = tgh.create_site(data['name'])
+    text = '<b>' + data['name'] + '</b>' + '\n'\
+           + data['hyperlinks'] + '\n'\
+           + hide_link(link) + data['text']
 
     # part_name = '<b>' + data['name'] + '\n</b>'
     # part_link = '<a href="' + link + '"> </a>' '\n'
-    link = tgh.create_site(data['name'])
     # text += '<a href="' + link + '"> </a>' '\n'
     await state.update_data(link=link)
     await message.answer('Предпросмотр поста:')
-    await message.answer(text=text + hide_link(link), parse_mode='HTML', reply_markup=kb_done, )
+    await message.answer(text=text, parse_mode='HTML', reply_markup=kb.done, )
 
 
 @dp.message_handler(text='Редактировать пост', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
-    await message.answer('Что именно вы хотите отредактировать?', reply_markup=kb_parts)
+    await message.answer('Что именно вы хотите отредактировать?', reply_markup=kb.menu)
 
 
 @dp.message_handler(text='Удалить пост', state='*', content_types=types.ContentTypes.TEXT)
@@ -123,10 +147,10 @@ async def show_message(message: types.Message, state: FSMContext):
     tgh.delete_media()
     await bot.send_message(chat_id=message.from_user.id,
                            text='Информация для поста очищена, вы можете создать новый',
-                           reply_markup=kb_start)
+                           reply_markup=kb.start)
 
 
-@dp.message_handler(text='Отправить пост', state='*', content_types=types.ContentTypes.TEXT)
+@dp.message_handler(text='Опубликовать пост в канал', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if data.get('name') is None:
@@ -138,6 +162,10 @@ async def show_message(message: types.Message, state: FSMContext):
         await message.answer('Вы не добавили текст, введите его:')
         await state.set_state('States:add_text')
         return
+    elif data.get('hyperlinks') is None:
+        await message.answer('Вы не добавили гиперссылки, введите их:')
+        await state.set_state('States:add_hyperlinks')
+        return
     elif data.get('link') is None:
         link = tgh.create_site(data['name'])
     else:
@@ -148,14 +176,13 @@ async def show_message(message: types.Message, state: FSMContext):
     part_text = data['text']
     part_name = '<b>' + data['name'] + '\n</b>'
     part_link = '<a href="' + data['link'] + '"> </a>' '\n'
-    await message.answer('Отправляю..', reply_markup=kb_start)
-    print('отправляем сообщение в канал:\n',
-          await bot.send_message(chat_id=ch_id,
-                                 text=part_name + part_link + part_text,
-                                 parse_mode='HTML',
-                                 reply_markup=kb_favourite,
-                                 )
-          )
+    await message.answer('Отправляю..', reply_markup=kb.start)
+    print('отправляем сообщение в канал:')
+    await bot.send_message(chat_id=ch_id,
+                           text=part_name + part_link + part_text,
+                           parse_mode='HTML',
+                           reply_markup=kb.favourite,
+                           )
     await state.reset_data()
     # tgh.delete_media()
 
@@ -212,21 +239,35 @@ async def show_message(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text='favourite', state='*')
 async def process_callback_button1(callback: types.CallbackQuery, state: FSMContext):
-    await callback.answer(text='Добавлено в избранное')
-    mes = await callback.message.send_copy(chat_id=callback.from_user.id,
-                                           reply_markup=kb_favourite,
-                                           )
-    print(mes.message_id)
-    print(callback.message.message_id)
-    mysql_use.check_user_new(callback.from_user.id, id_origin=callback.message.message_id, id_copy=mes.message_id)
+    id_copy = db.get_copy(callback.from_user.id, callback.message.message_id)
+    print('id copy', id_copy)
+    if id_copy is None or id_copy == '':
+        mes = await callback.message.send_copy(chat_id=callback.from_user.id,
+                                               reply_markup=kb.delete_favourite,
+                                               )
+        id_copy = mes.message_id
+        print(id_copy)
+
+    # mes = await callback.message.send_copy(chat_id=callback.from_user.id,
+    #                                        reply_markup=kb_favourite,
+    #                                        )
+    print(id_copy)
+    # print(callback.message.message_id)
+    if db.check_user_new(callback.from_user.id, id_origin=callback.message.message_id, id_copy=id_copy) == -1:
+        await bot.delete_message(chat_id=callback.from_user.id, message_id=id_copy)
+        await callback.answer(text='Удалено из избранного!')
+    else:
+        await callback.answer(text='Добавлено в избранное')
 
 
-@dp.callback_query_handler(text='favour12ite', state='*')
+@dp.callback_query_handler(text='delete_favourite', state='*')
 async def callback_del(callback: types.CallbackQuery):
-    mysql_use.check_user(callback.from_user.id, callback.message.message_id)
-    print(callback)
-    await callback.answer(text='Удалено из избранного')
-    await callback.message.delete()
+    db.check_user_new(callback.from_user.id, id_copy=callback.message.message_id)
+    await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
+    await callback.answer(text='Удалено из избранного!')
+    # print(callback)
+    # await callback.answer(text='Удалено из избранного')
+    # await callback.message.delete()
 
 
 @dp.message_handler(commands=['show'], state='*', content_types=types.ContentTypes.ANY)

@@ -77,13 +77,14 @@ def check_user_new(id_user, id_origin=None, id_copy=None):
     with connection.cursor() as cursor:
         user_exist = cursor.execute('select id_message from favourite where id_user=%s' % id_user)
         for row in cursor:
+            if id_origin is None and id_copy is not None:
+                id_origin = get_origin(id_user, id_copy)
+
             # print(row['id_message'])
             line = row['id_message']
             mes_exist = row['id_message'].find(';' + str(id_origin))
             print(line)
 
-        if id_origin is None and id_copy is not None:
-            id_origin = get_origin(id_user, id_copy)
         if id_copy is None and id_origin is not None:
             id_copy = get_copy(id_user, id_origin)
         # print('id_orig:%s\nid_copy:%s\nuser:%s\nmes:%s' % (id_origin, id_copy, user_exist, mes_exist))
@@ -100,6 +101,9 @@ def check_user_new(id_user, id_origin=None, id_copy=None):
             line = row['id_message'].replace(';' + str(id_origin) + '-' + str(id_copy) + ';', '')
             # print(row[0])
             delete_message(id_user, line)
+            connection.commit()  # apply changes (for innodb engine)
+            print('Time of request to base:', time.time() - t_request)
+            return -1
     connection.commit()  # apply changes (for innodb engine)
     print('Time of request to base:', time.time() - t_request)
 
@@ -110,7 +114,7 @@ def get_origin(id_user, id_copy_mes):
         cursor.execute('select * from favourite where id_user=%s' % id_user)
         for row in cursor:
             # print(row['id_message'])
-            id_orig_mes = row['id_message'].partition('-' + id_copy_mes + ';')[0].rpartition(';')[2]
+            id_orig_mes = row['id_message'].partition('-' + str(id_copy_mes) + ';')[0].rpartition(';')[2]
             # print(id_orig_mes)
             return id_orig_mes
 
@@ -120,7 +124,7 @@ def get_copy(id_user, id_origin_mes):
         cursor.execute('select * from favourite where id_user=%s' % id_user)
         for row in cursor:
             # print(row['id_message'])
-            id_copy_mes = row['id_message'].partition(';' + id_origin_mes + '-')[2].partition(';')[0]
+            id_copy_mes = row['id_message'].partition(';' + str(id_origin_mes) + '-')[2].partition(';')[0]
             # print(id_copy_mes)
             return id_copy_mes
 
@@ -128,9 +132,10 @@ def get_copy(id_user, id_origin_mes):
 t_connect = time.time()
 connection = pymysql.connect(**connect_param)
 print('Database connected\nTime of connect=', (time.time() - t_connect))
-# get_copy('153')
+# print(get_copy('1223', '154'))
 # get_origin('3603')
-check_user_new('1223',
-               id_origin='154',
-               id_copy='3301'
-               )
+# check_user_new('1223',
+#                id_origin='154',
+#                id_copy='3301'
+#                )
+
