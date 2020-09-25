@@ -1,16 +1,11 @@
 from aiogram.utils import executor
-from files import timers
+from files import past_posting
 from files.handlers import *
 from datetime import datetime
 import time
 
-from apscheduler.schedulers.background import BackgroundScheduler
-
 if __name__ == '__main__':
 
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(timers.tick, 'date', seconds=10)
-    scheduler.start()
     executor.start_polling(dp)
 
 

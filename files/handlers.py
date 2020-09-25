@@ -10,6 +10,7 @@ from files.connections import *
 import files.keyboards as kb
 from aiogram import types
 import os
+from . import past_posting as pp
 
 
 @dp.message_handler(commands=['start'], state="*")
@@ -65,22 +66,24 @@ async def send(ch):
                            )
 
 
-@dp.message_handler(text='пауза', state='*')
+@dp.message_handler(state='*')
 async def main_menu(message: types.Message, state: FSMContext):
     await bot.send_message(chat_id=message.from_user.id,
                            text='отправлено прямо сейчас',
                            )
-    await asyncio.wait(send(message.from_user.id))
+    await pp.tick(message.from_user.id, message.text)
+    # scheduler.add_job(past_posting.tick, 'date', seconds=10)
+    # await asyncio.wait(send(message.from_user.id))
     await bot.send_message(chat_id=message.from_user.id,
                            text='отправлено не через 30 секунд',
                            )
     # await state.set_state('States:add_photo')
 
 
-@dp.message_handler(text='test', state='*')
-async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id,
-                           text='Всё хорошо, как же еще может быть ' + hide_link('vk.com'), parse_mode='HTML')
+# @dp.message_handler(text='test', state='*')
+# async def main_menu(message: types.Message, state: FSMContext):
+#     await bot.send_message(chat_id=message.from_user.id,
+#                            text='Всё хорошо, как же еще может быть ' + hide_link('vk.com'), parse_mode='HTML')
 
 
 @dp.message_handler(state=States.add_name)
