@@ -1,7 +1,7 @@
-from telegraph import Telegraph
+from telegraph import Telegraph, exceptions
 import requests
 import os
-import time
+from .connections import dp
 
 telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71ee09914698d1e1e80')
 # telegraph.create_account(short_name='Ivan',
@@ -29,12 +29,16 @@ def create_site(name):
                     files={'1': ('1', f, 'image/jpg')}  # image/gif, image/jpeg, image/jpg, image/png, video/mp4
                 ).json()[0]['src']
             ) + '"/><pre><figcaption>' + caption + '</figcaption></pre></figure></p>'
-    response = telegraph.create_page(
-        name,
-        html_content=photo_html,
-        author_name='Ivan Garmashev',
-        author_url='https://t.me/PUTEEEN',
-    )
+    try:
+        response = telegraph.create_page(
+            name,
+            html_content=photo_html,
+            author_name='Ivan Garmashev',
+            author_url='https://t.me/PUTEEEN',
+        )
+    except exceptions.TelegraphException:
+        return -1
+
     print(photo_html)
     link = 'https://telegra.ph/{}'.format(response['path'])
     print(link)

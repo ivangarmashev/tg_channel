@@ -1,6 +1,5 @@
 from aiogram.dispatcher import FSMContext
 import io
-import asyncio
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hide_link
 from aiogram.utils import exceptions
@@ -12,14 +11,25 @@ import files.keyboards as kb
 from aiogram import types
 import os
 from . import past_posting as pp
+from datetime import datetime
 
 
 @dp.message_handler(commands=['start'], state="*")
-@dp.message_handler(text='Привет', state="*")
 async def send_welcome(message: types.Message, state: FSMContext):
     # types.ReplyKeyboardRemove()
     # await bot.send_message(chat_id=ch_id, text='123')
-    await message.reply("Привет", reply_markup=kb.start)
+    await message.reply("Поздравляем! "
+                        "Теперь вы можете использовать избранное в чате! "
+                        "Места которые вы отметили избранными будут появляться в этом чате)",
+                        reply_markup=kb.start)
+
+
+@dp.message_handler(text='Привет', state="*")
+async def welcome_admin(message: types.Message, state: FSMContext):
+    await message.reply("Поздравляем! "
+                        "Теперь вы можете использовать избранное в чате! "
+                        "Места которые вы отметили избранными будут появляться в этом чате)",
+                        reply_markup=kb.start)
 
 
 @dp.message_handler(text='Написать новый пост', state='*')
@@ -117,6 +127,14 @@ async def main_menu(message: types.Message, state: FSMContext):
         new_file.write(downloaded_file)
 
 
+@dp.message_handler(text='Привет')
+@dp.message_handler(content_types=types.ContentTypes.STICKER)
+async def main_menu(message: types.Message, state: FSMContext):
+    print(message)
+    await message.answer_sticker(sticker='CAACAgIAAxkBAAIWxF9vuaHpOmZeH2nWMQPAxsAOgL2tAAIFAANSyHQNoBAnOLF_E_obBA')
+
+
+@dp.message_handler(text='Меню редактирования', content_types=types.ContentTypes.TEXT)
 @dp.message_handler(text='Меню', state='*', content_types=types.ContentTypes.TEXT)
 @dp.message_handler(text='Принять', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
@@ -126,7 +144,6 @@ async def show_message(message: types.Message, state: FSMContext):
 
 @dp.message_handler(text='Предпросмотр', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
-    await message.answer('Загружаю фото..', reply_markup=ReplyKeyboardRemove())
     data = await state.get_data()
     print(data.get('name'))
     if data.get('name') is None:
@@ -142,13 +159,20 @@ async def show_message(message: types.Message, state: FSMContext):
         await message.answer('Вы не добавили гиперссылки, введите их:')
         await state.set_state('States:add_hyperlinks')
         return
+    elif data.get('link') is None:
+        await message.answer('Загружаю фото..')
+        link = tgh.create_site(data['name'])
+        await state.update_data(link=link)
+    else:
+        link = data['link']
 
-    link = tgh.create_site(data['name'])
+    # await message.answer('Загружаю фото..', reply_markup=ReplyKeyboardRemove())
+
     text = '<b>' + data['name'] + '</b>' + '\n' \
            + hide_link(link) + data['hyperlinks'] + '\n' \
            + '\n' + data['text']
 
-    await state.update_data(link=link)
+    # await state.update_data(link=link)
     await message.answer('Предпросмотр поста:')
     await message.answer(text=text, parse_mode='HTML', reply_markup=kb.done, )
 
@@ -175,7 +199,65 @@ async def show_message(message: types.Message, state: FSMContext):
                            reply_markup=kb.menu)
 
 
-@dp.message_handler(text='Опубликовать пост в канал', state='*', content_types=types.ContentTypes.TEXT)
+# @dp.message_handler(text='Расписание', state='*', content_types=types.ContentTypes.TEXT)
+# async def menu_schedule(message: types.Message, state: FSMContext):
+#     await message.answer('Что вы хотите?', reply_markup=kb.sched)
+
+#
+# @dp.message_handler(text='Добавить текущий пост в расписание', state='*', content_types=types.ContentTypes.TEXT)
+# async def add_to_schedule(message: types.Message, state: FSMContext):
+#     data = await state.get_data()
+#     if data.get('name') is None:
+#         await message.answer('Вы не добавили название, введите его:')
+#         await state.set_state('States:add_name')
+#         return
+#     elif data.get('text') is None:
+#         await message.answer('Вы не добавили текст, введите его:')
+#         await state.set_state('States:add_text')
+#         return
+#     elif data.get('hyperlinks') is None:
+#         await message.answer('Вы не добавили гиперссылки, введите их:')
+#         await state.set_state('States:add_hyperlinks')
+#         return
+#     elif data.get('link') is None:
+#         await message.answer('Загружаю фото..')
+#         link = tgh.create_site(data['name'])
+#         if link == -1:
+#             await message.answer('Вы не добавили фото для Telegraph')
+#             await message.answer('Добавте их прямо сейчас:')
+#             state.set_state('States:add_photo')
+#             return
+#         await state.update_data(link=link)
+#
+#     await message.answer(text='Введите время в формате:\n ' + datetime.now().strftime("%d.%m.%y %H:%M"))
+#     await state.set_state('States:add_schedule')
+#
+#
+# @dp.message_handler(state=States.add_schedule, content_types=types.ContentTypes.TEXT)
+# async def add_to_schedule_pt2(message: types.Message, state: FSMContext):
+#     data = await state.get_data()
+#     text = '<b>' + data['name'] + '</b>\n' \
+#            + hide_link(data['link']) + data['hyperlinks'] + '\n' \
+#            + '\n' + data['text']
+#     try:
+#         await pp.tick(job_name=data['name'], timer=message.text, mes_text=text)
+#     except ValueError:
+#         await message.answer('Введена неверная дата, попробуйте еще:')
+#     await state.set_state('States:menu')
+#     await message.answer('Пост добавлен в расписание', reply_markup=kb.start)
+
+
+# @dp.message_handler(state='*')
+# async def pastp(message: types.Message, state: FSMContext):
+#     data = await state.get_data()
+#     part_text = data['text']
+#     part_name = '<b>' + data['name'] + '\n</b>'
+#     part_link = '<a href="' + data['link'] + '"> </a>' '\n'
+#     text = part_name + part_link + part_text
+#     await pp.tick(mes_text=text, timer=message.text, job_name=data['name'])
+
+
+@dp.message_handler(text='Опубликовать сейчас', state='*', content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if data.get('name') is None:
@@ -191,10 +273,11 @@ async def show_message(message: types.Message, state: FSMContext):
         await state.set_state('States:add_hyperlinks')
         return
     elif data.get('link') is None:
+        await message.answer('Загружаю фото..')
         link = tgh.create_site(data['name'])
+        await state.update_data(link=link)
     else:
         link = data['link']
-    text = data['name'] + '\n' + data['text']
 
     # data = await state.get_data()
     part_text = data['text']
@@ -202,22 +285,22 @@ async def show_message(message: types.Message, state: FSMContext):
     part_link = '<a href="' + data['link'] + '"> </a>' '\n'
     await message.answer('Отправляю..', reply_markup=kb.start)
     print('отправляем сообщение в канал:')
+    # await bot.send_message(chat_id=ch_id,
+    #                        text=part_name + part_link + part_text,
+    #                        parse_mode='HTML',
+    #                        reply_markup=kb.favourite,
+    #                        )
+    text = '<b>' + data['name'] + '</b>' + '\n' \
+           + hide_link(link) + data['hyperlinks'] + '\n' \
+           + '\n' + data['text']
+
+    await state.update_data(link=link)
     await bot.send_message(chat_id=ch_id,
-                           text=part_name + part_link + part_text,
+                           text=text,
                            parse_mode='HTML',
                            reply_markup=kb.favourite,
                            )
     await state.reset_data()
-
-
-@dp.message_handler(state='*')
-async def pastp(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    part_text = data['text']
-    part_name = '<b>' + data['name'] + '\n</b>'
-    part_link = '<a href="' + data['link'] + '"> </a>' '\n'
-    text = part_name + part_link + part_text
-    await pp.tick(ch_id=ch_id, mes_text=text, timer=message.text, job_name=data['name'])
 
 
 # await bot.send_message(chat_id=message.from_user.id, reply_markup=kb_start)
@@ -282,6 +365,7 @@ async def process_callback_button1(callback: types.CallbackQuery, state: FSMCont
                                                    )
         except exceptions.Unauthorized:
             await callback.answer(url=bot_link)
+            return
 
         id_copy = mes.message_id
         print(id_copy)

@@ -3,17 +3,20 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 start = types.ReplyKeyboardMarkup(resize_keyboard=True)
 start.add('Написать новый пост')
+start.add('Показать отложенные посты')
 
 menu = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                  one_time_keyboard=True,
                                  )
 menu.insert('Название')
-menu.insert('Текст')
+menu.add('Текст')
 menu.add('Гиперссылки')
-menu.insert('Фото')
+menu.add('Фото')
 menu.add('Предпросмотр')
-menu.insert('Удалить пост')
-menu.add('Опубликовать пост в канал')
+menu.add('Удалить пост')
+menu.add('Удалить фото')
+menu.add('Расписание')
+menu.add('Опубликовать сейчас')
 
 next_state = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 next_state.add('Принять')
@@ -21,9 +24,15 @@ next_state.add('Удалить фото')
 next_state.add('Удалить пост')
 
 done = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-done.add('Опубликовать пост в канал')
+done.add('Опубликовать сейчас')
+done.add('Расписание')
 done.add('Редактировать пост')
 done.add('Удалить пост')
+
+sched = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+sched.add('Показать отложенные посты')
+sched.add('Добавить текущий пост в расписание')
+sched.add('Меню редактирования')
 
 inline_btn_1 = InlineKeyboardButton('/start', callback_data='button1')
 inline_btn_2 = InlineKeyboardButton('/add', callback_data='button2')

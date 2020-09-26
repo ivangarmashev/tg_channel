@@ -1,8 +1,6 @@
 from aiogram.utils import executor
-from files import past_posting
 from files.handlers import *
-from datetime import datetime
-import time
+from files.handlers_for_schedule import *
 
 if __name__ == '__main__':
 
