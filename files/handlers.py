@@ -3,6 +3,7 @@ import io
 import asyncio
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hide_link
+from aiogram.utils import exceptions
 from files import mysql_use as db
 from files import telegraph_use as tgh
 from files.bot_states import *
@@ -58,26 +59,18 @@ async def main_menu(message: types.Message, state: FSMContext):
     await state.set_state('States:add_photo')
 
 
-# # @dp.message_handler(text='п2313', state='*')
-async def send(ch):
-    await asyncio.sleep(10)
-    await bot.send_message(chat_id=ch,
-                           text='отправлено через 10 секунд',
-                           )
-
-
-@dp.message_handler(state='*')
-async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id,
-                           text='отправлено прямо сейчас',
-                           )
-    await pp.tick(message.from_user.id, message.text)
-    # scheduler.add_job(past_posting.tick, 'date', seconds=10)
-    # await asyncio.wait(send(message.from_user.id))
-    await bot.send_message(chat_id=message.from_user.id,
-                           text='отправлено не через 30 секунд',
-                           )
-    # await state.set_state('States:add_photo')
+# @dp.message_handler(state='*')
+# async def main_menu(message: types.Message, state: FSMContext):
+#     await bot.send_message(chat_id=message.from_user.id,
+#                            text='отправлено прямо сейчас',
+#                            )
+#     await pp.tick(message.from_user.id, message.text)
+#     # scheduler.add_job(past_posting.tick, 'date', seconds=10)
+#     # await asyncio.wait(send(message.from_user.id))
+#     await bot.send_message(chat_id=message.from_user.id,
+#                            text='отправлено не через 30 секунд',
+#                            )
+# await state.set_state('States:add_photo')
 
 
 # @dp.message_handler(text='test', state='*')
@@ -217,6 +210,16 @@ async def show_message(message: types.Message, state: FSMContext):
     await state.reset_data()
 
 
+@dp.message_handler(state='*')
+async def pastp(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    part_text = data['text']
+    part_name = '<b>' + data['name'] + '\n</b>'
+    part_link = '<a href="' + data['link'] + '"> </a>' '\n'
+    text = part_name + part_link + part_text
+    await pp.tick(ch_id=ch_id, mes_text=text, timer=message.text, job_name=data['name'])
+
+
 # await bot.send_message(chat_id=message.from_user.id, reply_markup=kb_start)
 
 # print(await state.get_data())
@@ -273,9 +276,13 @@ async def process_callback_button1(callback: types.CallbackQuery, state: FSMCont
     id_copy = db.get_copy(callback.from_user.id, callback.message.message_id)
     print('id copy', id_copy)
     if id_copy is None or id_copy == '':
-        mes = await callback.message.send_copy(chat_id=callback.from_user.id,
-                                               reply_markup=kb.delete_favourite,
-                                               )
+        try:
+            mes = await callback.message.send_copy(chat_id=callback.from_user.id,
+                                                   reply_markup=kb.delete_favourite,
+                                                   )
+        except exceptions.Unauthorized:
+            await callback.answer(url=bot_link)
+
         id_copy = mes.message_id
         print(id_copy)
 

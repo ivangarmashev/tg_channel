@@ -13,6 +13,7 @@ tracemalloc.start()
 API_TOKEN = '1179364946:AAFTTG57jQNLIEprI13JZzFi81Mg0OovUcw'
 logging.basicConfig(level=logging.INFO)
 ch_id = '@vantobotch'
+bot_link = 'https://t.me/Vanto_bot?start=1'
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
