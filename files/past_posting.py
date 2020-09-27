@@ -7,39 +7,41 @@ from files import keyboards as kb
 
 scheduler = AsyncIOScheduler()
 scheduler.start()
-# dt = datetime.strptime("21 11 06 16 30", "%d %m %y %H %M")
-# print(datetime.now().strftime("%d.%m.%y %H:%M"))
 
 
-async def tick(mes_text, timer, job_name):
-    # print(f'Tick! The time is: {datetime.now()}')
+async def add_to_schedule(mes_text, timer, job_name):
     dt = datetime.strptime(timer, "%d.%m.%y %H:%M")
-    # scheduler.add_job(tick2,
-    #                   id=job_name,
-    #                   trigger='date',
-    #                   run_date=datetime(2020, 9, datetime.now().day, datetime.now().hour, datetime.now().minute, datetime.now().second+int(timer)),
-    #                   args=[ch_id, mes_text])
     print(scheduler.get_jobs())
-    # await bot.send_message(chat_id=id_u, text='сообщение из pp')
-    scheduler.add_job(tick2,
+    scheduler.add_job(send_from_schedule,
                       id=job_name,
-                      run_date=dt,
+                      next_run_time=dt,
                       args=[mes_text]
                       )
 
 
-async def tick2(mes_text):
+async def send_from_schedule(mes_text):
     await bot.send_message(chat_id=ch_id, text=mes_text, parse_mode='HTML', reply_markup=kb.favourite)
-    # try:
-    #     while True:
-    #         time.sleep(2)
-    #         print('Printing in the main thread.')
-    # except KeyboardInterrupt:
-    #     pass
 
 
-async def tick3():
-    print(datetime.now())
+async def send_for_edit(id_job):
+    return scheduler.get_job(id_job).args[0]
+
+
+async def edit_time_send(timer, job_name):
+    dt = datetime.strptime(timer, "%d.%m.%y %H:%M")
+    scheduler.modify_job(job_id=job_name, next_run_time=dt)
+
+
+async def get_schedule():
+    s = scheduler.get_jobs()
+    return await kb.create_schedule(s)
+
+
+async def del_schedule(job_name):
+    scheduler.remove_job(job_id=job_name)
+
+
+
 
 #
 # scheduler.add_job(tick3, id='1234',

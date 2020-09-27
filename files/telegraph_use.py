@@ -1,7 +1,7 @@
 from telegraph import Telegraph, exceptions
 import requests
 import os
-from .connections import dp
+
 
 telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71ee09914698d1e1e80')
 # telegraph.create_account(short_name='Ivan',

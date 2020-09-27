@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from datetime import datetime
 
 start = types.ReplyKeyboardMarkup(resize_keyboard=True)
 start.add('Написать новый пост')
@@ -8,19 +9,21 @@ start.add('Показать отложенные посты')
 menu = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                  one_time_keyboard=True,
                                  )
-menu.insert('Название')
-menu.add('Текст')
+menu.add('Название')
+menu.insert('Текст')
+menu.insert('Фото')
 menu.add('Гиперссылки')
-menu.add('Фото')
-menu.add('Предпросмотр')
+menu.insert('Предпросмотр')
 menu.add('Удалить пост')
-menu.add('Удалить фото')
+menu.insert('Удалить все фото')
 menu.add('Расписание')
-menu.add('Опубликовать сейчас')
+menu.insert('Опубликовать сейчас')
 
-next_state = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+next_state = types.ReplyKeyboardMarkup(resize_keyboard=True,
+                                       # one_time_keyboard=True,
+                                       )
 next_state.add('Принять')
-next_state.add('Удалить фото')
+next_state.add('Удалить все фото')
 next_state.add('Удалить пост')
 
 done = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -34,9 +37,10 @@ sched.add('Показать отложенные посты')
 sched.add('Добавить текущий пост в расписание')
 sched.add('Меню редактирования')
 
-inline_btn_1 = InlineKeyboardButton('/start', callback_data='button1')
-inline_btn_2 = InlineKeyboardButton('/add', callback_data='button2')
-inline_btn_3 = InlineKeyboardButton('Третья кнопка!', callback_data='button3')
+sched_edit = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+sched_edit.add('Редактировать время отправки')
+sched_edit.add('Удалить пост из расписания')
+sched_edit.add('Удалить пост полностью')
 
 favourite_but = InlineKeyboardButton('Избранное', callback_data='favourite')
 favourite = InlineKeyboardMarkup().add(favourite_but)
@@ -44,4 +48,11 @@ favourite = InlineKeyboardMarkup().add(favourite_but)
 del_favourite = InlineKeyboardButton('Удалить из избранного', callback_data='delete_favourite')
 delete_favourite = InlineKeyboardMarkup().add(del_favourite)
 
-inline_start = InlineKeyboardMarkup().add(inline_btn_1, inline_btn_2)
+
+async def create_schedule(ids):
+    a = []
+    for x in ids:
+        a.append(InlineKeyboardButton(text='"' + str(x.id) + '" ' + str(x.next_run_time.strftime("%d.%m.%y %H:%M")), callback_data=x.id))
+    schedule_keyboard = InlineKeyboardMarkup(row_width=1).add(*a)
+    return schedule_keyboard
+

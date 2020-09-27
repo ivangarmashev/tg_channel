@@ -1,6 +1,8 @@
 from aiogram.utils import executor
-from files.handlers import *
-from files.handlers_for_schedule import *
+from files.connections import dp
+import files.handlers
+import files.handlers_for_schedule
+import files.admin_premission
 
 if __name__ == '__main__':
 

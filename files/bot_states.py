@@ -11,3 +11,5 @@ class States(StatesGroup):
     menu = State()
     show = State()
     sent = State()
+    select_in_schedule = State()
+    edit_time = State()
