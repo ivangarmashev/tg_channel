@@ -1,4 +1,4 @@
-from aiogram import types
+﻿from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 
@@ -41,6 +41,7 @@ sched_edit = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=T
 sched_edit.add('Редактировать время отправки')
 sched_edit.add('Удалить пост из расписания')
 sched_edit.add('Удалить пост полностью')
+sched_edit.add('Меню')
 
 favourite_but = InlineKeyboardButton('Избранное', callback_data='favourite')
 favourite = InlineKeyboardMarkup().add(favourite_but)

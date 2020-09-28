@@ -1,15 +1,16 @@
-from telegraph import Telegraph, exceptions
+﻿from telegraph import Telegraph, exceptions
 import requests
 import os
 
 
-telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71ee09914698d1e1e80')
+# telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71ee09914698d1e1e80')
+telegraph = Telegraph(access_token='5edf7b0225a35f9e7a8edb2626ac7c16617ac9a70963738cee8ab0470a82')
 # telegraph.create_account(short_name='Ivan',
 #                          author_name='Ivan Garmashev',
 #                          author_url='https://t.me/PUTEEEN',
 #                          # replace_token='08a09f327cd39c4b23ea76f904c27a9ca223ad0ad641259baaf1164507e4',
 #                          )
-directory = 'C:/Users/ivang/PycharmProjects/Tg_channel/media/'  # directory of photo
+directory = 'C:/Users/Administrator/Desktop/tg_channel-master/media/'  # directory of photo
 
 
 def create_site(name):
