@@ -56,11 +56,12 @@ async def show_schedulers(message: types.Message, state: FSMContext):
     await state.set_state('States:select_in_schedule')
 
 
-@dp.callback_query_handler(state=States.select_in_schedule)         # Выбор и предпросмотр поста из списка расписания
+@dp.callback_query_handler(state=ast.all_state)         # Выбор и предпросмотр поста из списка расписания
 async def callback_sched(callback: types.CallbackQuery, state: FSMContext):
     try:
         text_from_sched = await pp.send_for_edit(callback.data)
         await state.update_data(id_job=callback.data)
+        await state.set_state('States:select_in_schedule')
         await callback.answer()
         await callback.message.answer(text=text_from_sched, parse_mode='HTML', reply_markup=kb.sched_edit)
     except AttributeError:
