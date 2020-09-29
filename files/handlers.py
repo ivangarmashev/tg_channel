@@ -15,6 +15,12 @@ from datetime import datetime, timedelta
 from files import all_states as ast
 
 
+@dp.message_handler(text='Главное меню', state=ast.all_state, content_types=types.ContentTypes.TEXT)
+async def show_start_message(message: types.Message, state: FSMContext):
+    await message.answer(text='Принято!', reply_markup=kb.start)
+    await state.set_state('States:menu')
+
+
 @dp.message_handler(text='Меню редактирования', state=ast.all_state, content_types=types.ContentTypes.TEXT)
 @dp.message_handler(text='Меню', state=ast.all_state, content_types=types.ContentTypes.TEXT)
 @dp.message_handler(text='Принять', state=ast.all_state, content_types=types.ContentTypes.TEXT)
@@ -60,11 +66,18 @@ async def main_menu(message: types.Message, state: FSMContext):
     await state.set_state('States:add_hyperlinks')
 
 
+@dp.message_handler(text='Telegraph', state=ast.without_tgh_text)
+async def telegraph(message: types.Message, state: FSMContext):
+    await bot.send_message(chat_id=message.from_user.id, text='Введите текст для Telegraph:')
+    await state.set_state('States:add_telegraph_text')
+
+
 @dp.message_handler(text='Фото', state=ast.all_state)
 async def main_menu(message: types.Message, state: FSMContext):
     await bot.send_message(chat_id=message.from_user.id,
                            text='Отравьте фото и нажмите "Принять"',
                            reply_markup=kb.next_state)
+    await state.update_data(link=None)
     await state.set_state('States:add_photo')
 
 
@@ -88,6 +101,14 @@ async def main_menu(message: types.Message, state: FSMContext):
 async def main_menu(message: types.Message, state: FSMContext):
     print('text', message.text)
     await state.update_data(hyperlinks=message.text)
+    await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb.menu)
+    await state.set_state('States:menu')
+
+
+@dp.message_handler(state=States.add_telegraph_text)
+async def main_menu(message: types.Message, state: FSMContext):
+    print('tgh text', message.text)
+    await state.update_data(tgh_text=message.text, link=None)
     await bot.send_message(chat_id=message.from_user.id, text='Принято!', reply_markup=kb.menu)
     await state.set_state('States:menu')
 
@@ -127,7 +148,15 @@ async def show_message(message: types.Message, state: FSMContext):
 
     elif data.get('link') is None:
         await message.answer('Загружаю фото..')
-        link = tgh.create_site(data['name'])
+        if data.get('tgh_text') is not None:
+            link = tgh.create_site(name=data['name'], text=data['tgh_text'])
+        else:
+            link = tgh.create_site(name=data['name'])
+        if link == -1:
+            await message.answer('Вы не добавили фото для Telegraph')
+            await message.answer('Добавте их прямо сейчас и нажмите принять:', reply_markup=kb.next_state)
+            await state.set_state('States:add_photo')
+            return
         await state.update_data(link=link)
     else:
         link = data['link']
@@ -157,6 +186,7 @@ async def show_message(message: types.Message, state: FSMContext):
 @dp.message_handler(text='Удалить все фото', state=ast.all_state, content_types=types.ContentTypes.TEXT)
 async def show_message(message: types.Message, state: FSMContext):
     tgh.delete_media()
+    await state.update_data(link=None)
     await bot.send_message(chat_id=message.from_user.id,
                            text='Фото удалены, можете добавить новые',
                            reply_markup=kb.menu)
@@ -179,7 +209,15 @@ async def show_message(message: types.Message, state: FSMContext):
         return
     elif data.get('link') is None:
         await message.answer('Загружаю фото..')
-        link = tgh.create_site(data['name'])
+        if data.get('tgh_text') is not None:
+            link = tgh.create_site(name=data['name'], text=data['tgh_text'])
+        else:
+            link = tgh.create_site(name=data['name'])
+        if link == -1:
+            await message.answer('Вы не добавили фото для Telegraph')
+            await message.answer('Добавте их прямо сейчас и нажмите принять:', reply_markup=kb.next_state)
+            await state.set_state('States:add_photo')
+            return
         await state.update_data(link=link)
     else:
         link = data['link']

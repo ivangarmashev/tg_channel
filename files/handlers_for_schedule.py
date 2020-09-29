@@ -16,7 +16,9 @@ async def menu_schedule(message: types.Message, state: FSMContext):
     await state.set_state('States:menu')
 
 
-@dp.message_handler(text='Добавить текущий пост в расписание', state=ast.all_state, content_types=types.ContentTypes.TEXT)
+@dp.message_handler(text='Добавить текущий пост в расписание',
+                    state=ast.all_state,
+                    content_types=types.ContentTypes.TEXT)
 async def add_to_schedule(message: types.Message, state: FSMContext):
     data = await state.get_data()
     if data.get('name') is None:
@@ -33,7 +35,10 @@ async def add_to_schedule(message: types.Message, state: FSMContext):
         return
     elif data.get('link') is None:
         await message.answer('Загружаю фото..')
-        link = tgh.create_site(data['name'])
+        if data.get('tgh_text') is not None:
+            link = tgh.create_site(name=data['name'], text=data['tgh_text'])
+        else:
+            link = tgh.create_site(name=data['name'])
         if link == -1:
             await message.answer('Вы не добавили фото для Telegraph')
             await message.answer('Добавте их прямо сейчас и нажмите принять:', reply_markup=kb.next_state)
@@ -53,11 +58,14 @@ async def show_schedulers(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(state=States.select_in_schedule)         # Выбор и предпросмотр поста из списка расписания
 async def callback_sched(callback: types.CallbackQuery, state: FSMContext):
-    text_from_sched = await pp.send_for_edit(callback.data)
-    await state.update_data(id_job=callback.data)
-    await state.set_state('States:menu')
-    await callback.answer()
-    await callback.message.answer(text=text_from_sched, parse_mode='HTML', reply_markup=kb.sched_edit)
+    try:
+        text_from_sched = await pp.send_for_edit(callback.data)
+        await state.update_data(id_job=callback.data)
+        await callback.answer()
+        await callback.message.answer(text=text_from_sched, parse_mode='HTML', reply_markup=kb.sched_edit)
+    except AttributeError:
+        await callback.message.answer(text='Запись в расписании не существует.', reply_markup=kb.start)
+        await callback.answer()
 
 
 @dp.message_handler(text='Редактировать время отправки', state=States.select_in_schedule)

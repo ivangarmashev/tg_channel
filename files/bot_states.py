@@ -8,6 +8,7 @@ class States(StatesGroup):
     add_photo = State()
     add_link = State()
     add_schedule = State()
+    add_telegraph_text = State()
     menu = State()
     show = State()
     sent = State()

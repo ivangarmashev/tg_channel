@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-# from apscheduler.schedulers.background import BaseScheduler
 from files.connections import bot, ch_id
 from files import keyboards as kb
 
@@ -38,7 +37,10 @@ async def get_schedule():
 
 
 async def del_schedule(job_name):
-    scheduler.remove_job(job_id=job_name)
+    try:
+        scheduler.remove_job(job_id=job_name)
+    except:
+        pass
 
 
 

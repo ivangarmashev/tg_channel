@@ -4,18 +4,18 @@ import os
 
 
 # telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71ee09914698d1e1e80')
-telegraph = Telegraph(access_token='5edf7b0225a35f9e7a8edb2626ac7c16617ac9a70963738cee8ab0470a82')
+telegraph = Telegraph(access_token='67dd3e7b5a5a3ddc057542ab173b1ed31305323e84521a03b8eb9562698e')
 # telegraph.create_account(short_name='Ivan',
 #                          author_name='Ivan Garmashev',
 #                          author_url='https://t.me/PUTEEEN',
 #                          # replace_token='08a09f327cd39c4b23ea76f904c27a9ca223ad0ad641259baaf1164507e4',
 #                          )
-directory = 'C:/Users/Administrator/Desktop/tg_channel-master/media/'  # directory of photo
+directory = 'C:/tg_channel/media/'  # directory of photo
 
 
-def create_site(name):
+def create_site(name, text=''):
     list_files = os.listdir(directory)
-    photo_html = ''
+    photo_html = '<p></p>' + text
     for i in list_files:
         print(i)
         with open(directory + i, 'rb') as f:  # upload photo to server
@@ -24,18 +24,18 @@ def create_site(name):
                 caption = file_name.replace(file_name[0], '@')
             else:
                 caption = ''
-            photo_html = photo_html + '<p><figure><img src="' + (
+            photo_html = photo_html + '<figure><img src="' + (
                 requests.post(
                     'https://telegra.ph/upload',
                     files={'1': ('1', f, 'image/jpg')}  # image/gif, image/jpeg, image/jpg, image/png, video/mp4
                 ).json()[0]['src']
-            ) + '"/><pre><figcaption>' + caption + '</figcaption></pre></figure></p>'
+            ) + '"/><figcaption>' + caption + '</figcaption></figure>'
     try:
         response = telegraph.create_page(
-            name,
+            title=name,
             html_content=photo_html,
-            author_name='Ivan Garmashev',
-            author_url='https://t.me/PUTEEEN',
+            author_name='Места для Инста',
+            author_url='https://t.me/mesta4insta',
         )
     except exceptions.TelegraphException:
         return -1
