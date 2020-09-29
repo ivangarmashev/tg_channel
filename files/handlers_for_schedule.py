@@ -78,6 +78,7 @@ async def edit_date(message: types.Message, state: FSMContext):
 @dp.message_handler(state=States.edit_time, content_types=types.ContentTypes.TEXT)
 async def edit_date(message: types.Message, state: FSMContext):
     data = await state.get_data()
+
     try:
         await pp.edit_time_send(job_name=data['id_job'], timer=message.text)
         await state.set_state('States:menu')

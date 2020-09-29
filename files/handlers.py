@@ -62,7 +62,8 @@ async def main_menu(message: types.Message, state: FSMContext):
 
 @dp.message_handler(text='Гиперссылки', state=ast.without_hyperlinks)
 async def main_menu(message: types.Message, state: FSMContext):
-    await bot.send_message(chat_id=message.from_user.id, text='Введите ссылки в формате HTML:')
+    await message.answer(text='Введите ссылки в формате HTML:')
+    await message.answer(text='<a href="url">Txt</a>')
     await state.set_state('States:add_hyperlinks')
 
 
