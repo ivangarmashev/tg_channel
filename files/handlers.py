@@ -123,7 +123,7 @@ async def main_menu(message: types.Message, state: FSMContext):
     if message.caption is None:
         message.caption = ''
 
-    src = 'media/' + str(len(os.listdir('media'))) + str(message.caption) + '.jpg'
+    src = 'media/' + str(len(os.listdir('media'))) + '@' + str(message.caption) + '.jpg'
     with open(src, 'wb') as new_file:
         new_file.write(downloaded_file)
 
