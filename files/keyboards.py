@@ -45,10 +45,10 @@ sched_edit.add('Удалить пост из расписания')
 sched_edit.add('Удалить пост полностью')
 sched_edit.add('Главное меню')
 
-favourite_but = InlineKeyboardButton('Избранное', callback_data='favourite')
+favourite_but = InlineKeyboardButton('В избранное \U00002764', callback_data='favourite')
 favourite = InlineKeyboardMarkup().add(favourite_but)
 
-del_favourite = InlineKeyboardButton('Удалить из избранного', callback_data='delete_favourite')
+del_favourite = InlineKeyboardButton('Удалить из избранного \U0000274C', callback_data='delete_favourite')
 delete_favourite = InlineKeyboardMarkup().add(del_favourite)
 
 

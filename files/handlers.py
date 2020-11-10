@@ -1,4 +1,4 @@
-from aiogram.dispatcher import FSMContext
+﻿from aiogram.dispatcher import FSMContext
 import io
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hide_link

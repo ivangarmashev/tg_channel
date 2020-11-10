@@ -3,19 +3,18 @@ import time
 import pymysql
 from pymysql.cursors import DictCursor
 
-connect_param = {'host': '18.191.94.4',
+connect_param = {'host': '3.21.53.121',
                  'user': 'admin0880',
                  'password': '0880',
-                 # 'password': '0880',
                  'db': 'users',
                  'charset': 'utf8',
                  'cursorclass': DictCursor
                  }  # connect to server
 
-connect_param2 = {'host': '18',
+connect_param2 = {'host': 'localhost',
                   'user': 'root',
-                  'password': '',
-                  'db': 'devices',
+                  #'password': '',
+                  'db': 'users',
                   'charset': 'utf8',
                   'cursorclass': DictCursor
                   }  # connect to localhost

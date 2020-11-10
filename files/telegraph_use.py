@@ -2,6 +2,7 @@
 import requests
 import os
 
+
 # telegraph = Telegraph(access_token='8efd824783cea0f0dcf74b885b2c643f56dcb037a71ee09914698d1e1e80')
 telegraph = Telegraph(access_token='67dd3e7b5a5a3ddc057542ab173b1ed31305323e84521a03b8eb9562698e')
 # telegraph.create_account(short_name='Ivan',
@@ -24,6 +25,10 @@ def create_site(name, text=''):
                 caption = '@' + file_name.partition('@')[2]
             else:
                 caption = ''
+#            if len(file_name) > 1:
+#                caption = file_name.replace(file_name[0], '@')
+#            else:
+#                caption = ''
             photo_html = photo_html + '<figure><img src="' + (
                 requests.post(
                     'https://telegra.ph/upload',
@@ -51,7 +56,6 @@ def delete_media():
     for x in c:
         os.remove(directory + x)
 
-
 # print(telegraph.get_account_info())
 # print(telegraph.get_access_token())
 # print(telegraph.get_page_list())
@@ -62,5 +66,5 @@ def delete_media():
 #                     html_content='<p>Редактированный текст<br/></p>',)
 # create_site(name='Название поста')
 # create_site()
-create_site('123')
+# create_site()
 # print(telegraph.get_page('Photo-09-18-13'))

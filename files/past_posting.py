@@ -4,7 +4,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from files.connections import bot, ch_id
 from files import keyboards as kb
 
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(job_defaults={'misfire_grace_time': 5*60})
 scheduler.start()
 
 
